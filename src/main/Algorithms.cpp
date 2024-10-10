@@ -1,6 +1,7 @@
 #include "Algorithms.h"
 #include "Motor.h"
 #include "IRSensor.h"
+#include "ObjectDetect.h"
 #include <stdlib.h>
 #include "Stack.h"
 
@@ -10,7 +11,7 @@ bool availableFunctions[4] = {true, true, true, true};
 //[forward, backwards, leftSwivel, rightSwivel]
 
 int* sensorArray;
-int lastIR[6] = {0, 0, 0, 0, 0, 0};
+int lastIR[4] = {0, 0, 0, 0};
 
 int functionCounter = 0;
 
@@ -21,22 +22,22 @@ void move(){
   // randomly pick
   // based
 
-  Serial.print("Available Functions: ");
-  for (int i = 0; i < 4; i++){
-    Serial.print(availableFunctions[i]);
-  Serial.println(" ");
-  }
+  // Serial.print("Available Functions: ");
+  // for (int i = 0; i < 4; i++){
+  //   Serial.print(availableFunctions[i]);
+  // Serial.println(" ");
+  // }
 
   for (int i = 0; i < 4; i++) {
     if (availableFunctions[i] == true)
       possibleFunctions.push(i);
   }
 
-  //Serial.print("Possible Functions");
-  for (int i = 0; i < 4; i++){
-    //Serial.print(possibleFunctions.get(i));
-  //Serial.println(" ");
-  }
+  // Serial.print("Possible Functions");
+  // for (int i = 0; i < 4; i++){
+  //   Serial.print(possibleFunctions.get(i));
+  // Serial.println(" ");
+  // }
   //Serial.print("Possible Functions Length: ");
   //Serial.println(possibleFunctions.length());
   int chosenIndex = (rand() % (possibleFunctions.length()));
@@ -49,12 +50,12 @@ void move(){
     functionCounter = 0;
   }
 
-  Serial.print("function counter");
-  Serial.println(functionCounter);
-  Serial.print("possible functions length");
-  Serial.println(possibleFunctions.length());
+  // Serial.print("function counter");
+  // Serial.println(functionCounter);
+  // Serial.print("possible functions length");
+  // Serial.println(possibleFunctions.length());
 
-  if (functionCounter > 30 && chosenFunctionIndex != 1) {
+  if (functionCounter > 5 && chosenFunctionIndex != 1) {
     chosenFunctionIndex = 0;
   }
   else {
@@ -89,6 +90,24 @@ void move(){
     possibleFunctions.clear();
 }
 
+void checkObjects() {
+  int* sensorArray = checkSurroundings();
+
+  for (int i = 0; i < 4; i++) {
+    Serial.print(sensorArray[i]);
+    Serial.print(" ");
+  }
+
+  Serial.println(" ");
+
+  if (sensorArray[0] < 15 || sensorArray[1] == 1 || sensorArray[2] == 1) {
+    availableFunctions[0] = false;
+    availableFunctions[1] = true;
+    availableFunctions[2] = false;
+    availableFunctions[3] = false;
+  }
+}
+
 void checkIR(){
   //Serial.print("Available: ");
   //Serial.println();
@@ -102,17 +121,17 @@ void checkIR(){
 }
   int* sensorArray = checkGround();
 
-  //Serial.print("Sensor array: ");
-  for (int i = 0; i < 6; i++) {
-    //Serial.print(sensorArray[i]);
-  }
+  // Serial.print("Sensor array: ");
+  // for (int i = 0; i < 4; i++) {
+  //   Serial.print(sensorArray[i]);
+  // }
   //Serial.print(" -> ");
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 4; i++) {
     //Serial.print(lastIR[i]);
   }
   //Serial.println(" ");
 
-  if (sensorArray[0] == lastIR[0] && sensorArray[1] == lastIR[1] && sensorArray[2] == lastIR[2] && sensorArray[3] == lastIR[3] && sensorArray[4] == lastIR[4] && sensorArray[5] == lastIR[5]){
+  if (sensorArray[0] == lastIR[0] && sensorArray[1] == lastIR[1] && sensorArray[2] == lastIR[2] && sensorArray[3] == lastIR[3]){
     //if nothings changed do same
     for (int i = 0; i < 4; i++)
       availableFunctions[i] = false;
@@ -129,26 +148,20 @@ void checkIR(){
       availableFunctions[3] = false; // cant leftSwivel
     } 
     if (sensorArray[1] == 1){
-      availableFunctions[0] = false; //cant go forward
-    }
-    if (sensorArray[2] == 1){
       availableFunctions[0] = false; 
       availableFunctions[2] = false; //cant right swivel 
     }
-    if (sensorArray[3] == 1){
+    if (sensorArray[2] == 1){
       availableFunctions[1] = false; //cant backwards
       availableFunctions[2] = false; //cant swivel left
     }
-    if (sensorArray[4] == 1){
-      //availableFunctions[1] = false; //cant go back
-    }
-    if (sensorArray[5] == 1){
+    if (sensorArray[3] == 1){
       availableFunctions[1] = false; //cant backwards
       availableFunctions[3] = false; //cant swivel right
     }
   }
   //Serial.print("last ir: ");
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 4; i++) {
     //Serial.print(lastIR[i]);
     lastIR[i] = sensorArray[i];
     //Serial.print(" -> ");

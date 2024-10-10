@@ -1,0 +1,2 @@
+void setupObjectSensors();
+int* checkSurroundings();
